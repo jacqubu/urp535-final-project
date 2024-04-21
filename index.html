@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bungee+Shade">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Josefin+Sans">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css"
+        integrity="sha256-sA+zWATbFveLLNqWO2gtiw3HL/lh1giY/Inf1BJ0z14=" crossorigin="" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"
+        integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg=" crossorigin=""></script>
+
+
+    <title>Loneliness and the Built Environment</title>
+    <style>
+        body {
+            font-family: "Bungee Shade", sans-serif;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .description {
+            font-family: "Josefin Sans", sans-serif;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-inline: 20vw;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align:center;">Loneliness and the Built Environment</h1>
+    <div id="map" style="width: 1360px;height: 600px;"></div>
+    <br>
+    <div>
+        <h3 class="description"> This is for my URP 535 Urban Informatics class final project. Parts of this code was adapted from a project I had worked on before (Ecodata). </h3>
+    </div>
+    <br>
+
+    <script>
+
+        var map = L.map('map').setView([0, 0], 2.2)
+        L.tileLayer("https://api.maptiler.com/maps/winter/{z}/{x}/{y}.png?key=dqX9xw3VZr9NNQXAWZmB", {
+            attribute: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+        }).addTo(map);
+
+        // function to add info 
+        function addApi(urlVar, textvariablename, layer) {
+            let url = "https://api.v2.emissions-api.org/api/v2/methane/statistics.json?country=" + urlVar + "&interval=year&begin=2021-01-01&end=2021-12-31&limit=10&offset=0";
+            fetch(url, { credentials: "same-origin" })
+                .then((response) => {
+                    if (!response.ok) throw Error(response.statusText);
+                    return response.json();
+                })
+                .then((data) => {
+                    // If ignoreStaleRequest was set to true, we want to ignore the results of the
+                    // the request. Otherwise, update the state to trigger a new render.
+                    if (!ignoreStaleRequest) {
+                        console.log(data);
+                        console.log("WOOHOOO");
+
+                        console.log("Data is:" + data[0]["value"])
+
+                        var newData = JSON.stringify(Math.trunc(data[0]["value"]["average"])) + " gm<sup>-2</sup>d<sup>-1</sup>";
+                        layer.bindPopup(textvariablename + newData)
+                    }
+                })
+                .catch((error) => console.log(error));
+        }
+
+        var JSON_name_list = [canada, spain, australia, iran, senegal, japan, egypt, germany, china, chile, kenya, brazil, nicaragua, usa, india, nigeria, russia];
+        var country_code = ["CAN","ESP", "AUS", "IRN", "SEN", "JPN", "EGY", "DEU", "CN", "CHL", "KEN", "BRA", "NIC", "USA", "IND", "NGA", "RUS"];
+        var text_var_name = [canText, spainText, austText, iranText, senegalText, japanText, egyptText, gerText, chinaText, chileText, kenyaText, brazilText, nicaraguaText, usaText, indiaText, nigeriaText, russiaText];
+
+        function addCountries(countryList, countryCodeList, text_var_name) {
+            for (let i = 0; i < countryList.length; i++) {
+                L.geoJSON(JSON_name_list[i], {
+                    onEachFeature: function (feature, layer) {
+
+                        let url = countryCodeList[i];
+                        console.log(i, "<-id, tvn->", text_var_name[i]);
+                        addApi(url, text_var_name[i], layer);
+                        //feature.properties.id = "canText";
+
+                        layer.bindPopup(text_var_name[i])
+                    }
+                }).addTo(map);
+            }
+        }
+        addCountries(JSON_name_list, country_code, text_var_name);
+    
+    </script>
+
+</body>
+
+</html>
