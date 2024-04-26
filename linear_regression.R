@@ -91,10 +91,10 @@ kitchen_pal <- colorQuantile("viridis", domain=built_environ_data[built_environ_
 plumbing_pal <- colorQuantile("viridis", domain=built_environ_data[built_environ_data$variable=='complete_plumbing',]$estimate, n=4)
 trans_veh_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='vehicle_alone',]$estimate, n=4)
 trans_carpool_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='vehicle_carpool',]$estimate, n=4)
-trans_public_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='public_trans',]$estimate, n=4)
-trans_walk_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='walk',]$estimate, n=4)
+trans_public_pal <- colorQuantile("viridis", domain=unique(transportation[transportation$variable=='public_trans',]$estimate), n=4)
+trans_walk_pal <- colorQuantile("viridis", domain=unique(transportation[transportation$variable=='walk',]$estimate), n=4)
 trans_home_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='home',]$estimate, n=4)
-trans_other_pal <- colorQuantile("viridis", domain=transportation[transportation$variable=='other',]$estimate, n=4)
+trans_other_pal <- colorQuantile("viridis", domain=unique(transportation[transportation$variable=='other',]$estimate), n=4)
 ind_live_diff_pal <- colorQuantile("viridis", domain=loneliness_data[loneliness_data$variable=='ind_live_diff',]$estimate, n=4)
 self_care_diff_pal <- colorQuantile("viridis", domain=loneliness_data[loneliness_data$variable=='self_care_diff',]$estimate, n=4)
 disability_pal <- colorQuantile("viridis", domain=loneliness_data[loneliness_data$variable=='disability',]$estimate, n=4)
@@ -129,10 +129,10 @@ map <- addToMap(map, built_environ_data[built_environ_data$variable=='complete_k
 map <- addToMap(map, built_environ_data[built_environ_data$variable=='complete_plumbing',], plumbing_pal, "Plumbing Facilities", "Complete Plumbing Facilities")
 map <- addToMap(map, transportation[transportation$variable=='vehicle_alone',], trans_veh_pal, "Vehicles", "Drove Alone to Work")
 map <- addToMap(map, transportation[transportation$variable=='vehicle_carpool',], trans_carpool_pal, "Carpool", "Carpooled to Work")
-# map <- addToMap(map, transportation[transportation$variable=='public_trans',], trans_public_pal, "Public Transportation", "Took Public Transportation to Work")
-# map <- addToMap(map, transportation[transportation$variable=='walk',], trans_walk_pal, "Walk", "Walked to Work")
+map <- addToMap(map, transportation[transportation$variable=='public_trans',], trans_public_pal, "Public Transportation", "Took Public Transportation to Work")
+map <- addToMap(map, transportation[transportation$variable=='walk',], trans_walk_pal, "Walk", "Walked to Work")
 map <- addToMap(map, transportation[transportation$variable=='home',], trans_home_pal, "Home", "Worked at Home")
-# map <- addToMap(map, transportation[transportation$variable=='other',], trans_other_pal, "Other Transportation", "Took Other Transportation to Work")
+map <- addToMap(map, transportation[transportation$variable=='other',], trans_other_pal, "Other Transportation", "Took Other Transportation to Work")
 map <- addToMap(map, loneliness_data[loneliness_data$variable=='ind_live_diff',], ind_live_diff_pal, "Independent Living Difficulty", "Independent Living Difficulty")
 map <- addToMap(map, loneliness_data[loneliness_data$variable=='self_care_diff',], self_care_diff_pal, "Self Care Difficulty", "Self Care Difficulty")
 map <- addToMap(map, loneliness_data[loneliness_data$variable=='disability',], disability_pal, "Disability Status", "Disability Status")
@@ -140,8 +140,8 @@ map <- addToMap(map, loneliness_data[loneliness_data$variable=='poverty',], pove
 
 map <- map %>% addLayersControl(
   baseGroups = c("OSM", "CartoDB"),
-  overlayGroups = c("Kitchen Facilities", "Plumbing Facilities", "Vehicles", "Carpool", "Worked at Home", "Independent Living Difficulty", "Self Care Difficulty", "Disability Status", "Poverty Status"),
-  options = layersControlOptions(collapsed = FALSE)) #%>%
-  # hideGroup("Plumbing Facilities", "Vehicles", "Carpool", "Worked at Home", "Independent Living Difficulty", "Self Care Difficulty", "Disability Status", "Poverty Status")
+  overlayGroups = c("Kitchen Facilities", "Plumbing Facilities", "Vehicles", "Carpool", "Public Transportation", "Walk", "Home", "Other Transportation", "Independent Living Difficulty", "Self Care Difficulty", "Disability Status", "Poverty Status"),
+  options = layersControlOptions(collapsed = FALSE)) %>%
+  hideGroup(c("Plumbing Facilities", "Vehicles", "Carpool", "Public Transportation", "Walk", "Home", "Other Transportation", "Independent Living Difficulty", "Self Care Difficulty", "Disability Status", "Poverty Status"))
 
 saveWidget(map, file="map.html") # Save the map as an HTML widget 
