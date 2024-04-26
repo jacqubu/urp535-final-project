@@ -67,30 +67,35 @@ pal <- colorNumeric(
 
 pal(c(10, 20, 30, 40, 50))
 
+tracts <- map_df(us, function(x) {tracts(x)})
 
 primary_secondary_roads("DC")
 roads()
+
+
+
+labels <- sprintf(
+  "<strong>%s</strong><br/>%g people / mi<sup>2</sup>",
+  built_environ_data$NAME, built_environ_data$estimate
+) %>% lapply(htmltools::HTML)
+
+
+bins <- c(0, 10, 20, 50, 100, 200, 500, 1000, Inf)
+pal <- colorBin("YlOrRd", domain = built_environ_data[built_environ_data$variable=='complete_kitchen',]$estimate, bins = bins)
+kitchen_pal <- colorQuantile("viridis", domain=built_environ_data[built_environ_data$variable=='complete_kitchen',]$estimate, n=4)
 
 map <- leaflet() %>% 
   setView(lng = -98.5833333333, lat = 39.8333333333, zoom = 5) %>% # center of USA
   addTiles() %>%
   # addProviderTiles(provider = "CartoDB.Positron") %>%
-  addPolygons(data = transportation)
-
-, 
-    fillColor = ~pal(density),
-    weight = 2,
-    opacity = 1,
-    color = "white",
-    dashArray = "3",
-    fillOpacity = 0.7)
-
-  # addTiles() %>%
-  # addPolygons(data = ind_live_diff)
-              # color = ~pal(estimate),
-              # weight = 0.5,
-              # smoothFactor = 0.2,
-              # fillOpacity = 0.5,
-              # label = ~estimate) 
+  addPolygons(data = built_environ_data[built_environ_data$variable=='complete_kitchen',], fillColor = ~kitchen_pal(estimate), weight = 0.35,  opacity = 1,  color = "white",  fillOpacity = 0.7,
+              highlightOptions = highlightOptions(weight = 3, color = "#666", fillOpacity = 0.7, bringToFront = TRUE),
+              label = labels, labelOptions = labelOptions(style = list("font-weight" = "normal", padding = "3px 8px"), textsize = "15px", direction = "auto"),
+              group="Kitchen Facilities") %>%
+  addLegend(pal=kitchen_pal, values = built_environ_data[built_environ_data$variable=='complete_kitchen',]$estimate, title="Kitchen Facilities", opacity = 0.7, position = "bottomright", group="Kitchen Facilities") %>%
+  addLayersControl(
+    # baseGroups = c("OSM (default)", "Toner", "Toner Lite"),
+    overlayGroups = c("Kitchen Facilities"),
+    options = layersControlOptions(collapsed = FALSE))
 
 saveWidget(map, file="map.html") # Save the map as an HTML widget 
